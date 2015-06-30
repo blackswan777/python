@@ -1,0 +1,147 @@
+# Ponnnggg...
+
+#http://www.codeskulptor.org/#user40_9WzOywvV8z_0.py
+
+import simplegui
+import random
+
+    # initialize global variables - position (pos), veloclty (vel), and paddles (pad)
+
+width = 700
+height = 350
+ball_radius = 20
+pad_width = 8
+pad_height = 80
+half_pad_width = pad_width / 2
+half_pad_height = pad_height / 2
+left = False
+right = True
+pad1_pos = height/2
+pad2_pos = height/2
+pad1_vel = 0.0
+pad2_vel = 0.0
+score1 = 0
+score2 = 0
+ball_pos = [width/2, height/2]
+ball_vel = [2.0,-2.0]
+
+    # initialize ball_pos and ball_vel for new ball in center of table
+
+def spawn_ball(direction):
+    
+    x_vel = random.randrange(120, 240)
+    y_vel = random.randrange(60, 180)
+    global ball_pos,ball_vel,left,right
+    
+    ball_pos = [width / 2, height / 2]
+    ball_vel = [-40.0 / 60.0, 5.0 / 60.0]
+    
+    if direction == right:
+        ball_vel = [250.0 / x_vel, -125.0 / y_vel]
+    elif direction == left:
+        ball_vel = [-250.0 / x_vel, -125.0 / y_vel]
+
+    # define event handlers
+
+def new_game():
+    global score1, score2
+    score1,score2 = 0,0
+    spawn_ball(right)
+
+def draw(canvas):
+    global score1, score2, pad1_pos, pad2_pos, ball_pos, ball_vel, pad1_vel, pad2_vel
+ 
+        # Update ball position
+
+    ball_pos[0] += ball_vel[0]
+    ball_pos[1] += ball_vel[1]
+    
+        # collide and reflect off the top and bottom
+
+    if ball_pos[1] <= ball_radius:
+        ball_vel[1] =- ball_vel[1]
+    elif ball_pos[1] >= (height-1) - ball_radius:
+        ball_vel[1] =- ball_vel[1]
+
+        # draw ball
+    
+    canvas.draw_circle(ball_pos, ball_radius, 5, "blue", "black")
+        
+        # draw center line and gutters
+    
+    canvas.draw_line([width / 2, 0],[width / 2, height], 1, "black")
+    canvas.draw_line([pad_width, 0],[pad_width, height], 1, "black")
+    canvas.draw_line([width - pad_width, 0],[width - pad_width, height], 1, "black")
+    
+    # update pad's vertical position, keep pad on the screen
+    
+    if pad1_pos+pad1_vel <=height-1-half_pad_height and pad1_pos+pad1_vel>=half_pad_height:
+        pad1_pos += pad1_vel
+    if pad2_pos+pad2_vel <=height-1-half_pad_height and pad2_pos+pad2_vel>=half_pad_height:
+        pad2_pos +=pad2_vel
+    
+        # draw pads
+
+    canvas.draw_line((half_pad_width,pad1_pos-half_pad_height),(half_pad_width,pad1_pos+half_pad_height),pad_width,"black")
+    canvas.draw_line((width-half_pad_width,pad2_pos-half_pad_height),(width-half_pad_width,pad2_pos+half_pad_height),pad_width,"black")
+
+        # determine whether pad and ball collide
+
+    if ball_pos[0] <= ball_radius + pad_width:
+        if ball_pos[1]+ball_radius >= pad1_pos-half_pad_height and ball_pos[1] <= pad1_pos+half_pad_height:
+            ball_vel[0] =- ((ball_vel[0] * 0.2) + ball_vel[0])
+        else:
+            score2 += 1
+            spawn_ball(right)
+    elif ball_pos[0] >= width-1-ball_radius-pad_width:
+        if ball_pos[1]+ball_radius >= pad2_pos-half_pad_height and ball_pos[1] <= pad2_pos+half_pad_height:
+            ball_vel[0] =- ((ball_vel[0] * 0.2) + ball_vel[0])
+        else:
+            score1 += 1
+            spawn_ball(left)
+
+        # draw scores
+
+    canvas.draw_text(str(score1), (300, 80), 60, "blue")
+    canvas.draw_text(str(score2), (360, 80), 60, "blue")
+
+def keydown(key):
+    global pad1_vel, pad2_vel
+    vel = 2.5
+    if key == simplegui.KEY_MAP["w"]:
+        pad1_vel = -vel
+    elif key == simplegui.KEY_MAP["s"]:
+        pad1_vel = vel
+    elif key == simplegui.KEY_MAP["up"]:
+        pad2_vel = -vel
+    elif key == simplegui.KEY_MAP["down"]:
+        pad2_vel = vel
+    elif key == simplegui.KEY_MAP["space"]:
+        new_game()
+
+def keyup(key):
+    global pad1_vel, pad2_vel
+    if key == simplegui.KEY_MAP["w"]:
+        pad1_vel = 0
+    elif key == simplegui.KEY_MAP["s"]:
+        pad1_vel = 0
+    elif key == simplegui.KEY_MAP["up"]:
+        pad2_vel = 0
+    elif key == simplegui.KEY_MAP["down"]:
+        pad2_vel = 0
+
+    # create frame - register handlers
+
+f = simplegui.create_frame("Ponnnggg....", width, height)
+f.set_canvas_background("white")
+f.set_draw_handler(draw)
+f.set_keydown_handler(keydown)
+f.set_keyup_handler(keyup)
+label1 = f.add_label("New game:")
+label2 = f.add_label("Click Restart or")
+label3 = f.add_label("press the Spacebar")
+f.add_button("Restart",new_game,200)
+
+    # start frame
+
+f.start()
