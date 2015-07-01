@@ -1,3 +1,2 @@
 # python
-code and codeskulptor links 
-code for interactive introductory python programming course @ rice univerity via coursera
+code and codeskulptor links for interactive introductory python programming course @ rice university via coursera
